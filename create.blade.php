@@ -1,34 +1,72 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Form</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .field-group { margin-bottom: 1rem; }
-    </style>
-</head>
-<body>
-<div class="container mt-4">
-    <h2>Create Dynamic Form</h2>
-
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <form action="{{ route('form.store') }}" method="POST" id="form-builder">
-        @csrf
-        <div class="mb-3">
-            <label class="form-label">Form Title</label>
-            <input type="text" name="title" class="form-control" required>
+@extends('admin.layouts.master')
+@section('pageTitle', 'Admin | brands')
+@section('main-content')
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <ol class="breadcrumb my-0 ms-2">
+                        <li class="breadcrumb-item"><a href="{{ route(getUserPrefix().'.dashboard') }}"><i class="fas fa-cubes"></i> {{ __('Dashboard') }}</a></li>
+                        <li class="breadcrumb-item active">
+                            <span><i class="fas fa-file-alt"></i> {{ __('Faqs') }}</span>
+                        </li>
+                    </ol>
+                </div>
+                <!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item active">
+                            <div id="clock"></div>
+                        </li>
+                    </ol>
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
         </div>
+        <!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Small boxes (Stat box) -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between">
+                                <h4 class="card-title mb-0">{{ __('Faqs') }}</h4>
+                                <div>
+                                    <a href="{{ route(getUserPrefix().'.faq.index') }}" class="btn btn-success btn-sm"><i class="fas fa-eye"></i> {{ __('View ALL')}}</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <x-toastr-notifications />
+                            <form action="{{ route('form.store') }}" method="POST" id="form-builder">
+                                @csrf
+                                <div class="mb-3">
+                                    <label class="form-label">Form Title</label>
+                                    <input type="text" name="title" class="form-control" required>
+                                </div>
 
-        <div id="fields-wrapper"></div>
+                                <div id="fields-wrapper"></div>
 
-        <button type="button" class="btn btn-secondary" onclick="addField()">Add Field</button>
-        <button type="submit" class="btn btn-primary">Save Form</button>
-    </form>
+                                <button type="button" class="btn btn-secondary" onclick="addField()">Add Field</button>
+                                <button type="submit" class="btn btn-primary">Save Form</button>
+                            </form>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- /.content -->
 </div>
-
 <script>
     let fieldIndex = 0;
 
@@ -65,6 +103,4 @@
         optionsDiv.style.display = (select.value === 'select') ? 'block' : 'none';
     }
 </script>
-
-</body>
-</html>
+@endsection
