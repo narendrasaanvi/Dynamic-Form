@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Advanced Drag & Drop Form Builder</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    .toolbox-item {
+      cursor: grab;
+      margin-bottom: 10px;
+    }
+    .form-element {
+      margin-bottom: 20px;
+      position: relative;
+      border: 1px solid #ccc;
+      padding: 15px;
+      background: #fff;
+      border-radius: 8px;
+    }
+    .editable-label {
+      border: none;
+      background: transparent;
+      font-weight: 500;
+      font-size: 1rem;
+      margin-bottom: 5px;
+      width: 100%;
+      cursor: pointer;
+    }
+    .editable-label[readonly] {
+      color: #000;
+    }
+    .option-input {
+      margin: 5px 0;
+    }
+    .add-option-btn {
+      cursor: pointer;
+      color: #0d6efd;
+      font-size: 0.9rem;
+    }
+    .reorder-buttons {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+  <div class="row">
+    <!-- Toolbox -->
+    <div class="col-md-4">
+      <h5>Toolbox</h5>
+      <div class="list-group">
+        <div class="list-group-item toolbox-item" draggable="true" data-type="text">Text</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="email">Email</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="number">Number</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="password">Password</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="date">Date</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="time">Time</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="tel">Phone</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="url">URL</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="color">Color Picker</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="file">File Upload</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="textarea">Text Area</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="select">Select</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="checkbox">Checkbox</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="logo">Logo Upload</div>
+        <div class="list-group-item toolbox-item" draggable="true" data-type="image">Image Upload</div>
+      </div>
+    </div>
+
+    <!-- Form Area -->
+    <div class="col-md-8">
+      <h5>Form Builder</h5>
+      <div class="bg-white rounded shadow-sm p-3" id="formArea" style="min-height: 400px; border: 2px dashed #ccc;">
+        <p class="text-muted">Drag elements here to build your form</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const toolboxItems = document.querySelectorAll('.toolbox-item');
+  const formArea = document.getElementById('formArea');
+
+  toolboxItems.forEach(item => {
+    item.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('type', item.dataset.type);
+    });
+  });
+
+  formArea.addEventListener('dragover', e => e.preventDefault());
+  formArea.addEventListener('drop', e => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('type');
+    addElement(type);
+  });
+
+  function makeLabelEditable(input) {
+    input.addEventListener('click', () => {
+      // Allow editing when clicked
+      input.removeAttribute('readonly');
+      input.focus();
+      input.select(); // Select the input text when clicked
+    });
+
+    input.addEventListener('blur', () => {
+      // Make the label readonly when clicked outside
+      input.setAttribute('readonly', true);
+    });
+  }
+
+  function addElement(type) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'form-element';
+
+    const reorderDiv = document.createElement('div');
+    reorderDiv.className = 'reorder-buttons';
+
+    const upBtn = document.createElement('button');
+    upBtn.innerHTML = '<i class="bi bi-arrow-up"></i>';
+    upBtn.className = 'btn btn-sm btn-outline-secondary me-1';
+    upBtn.onclick = () => {
+      const prev = wrapper.previousElementSibling;
+      if (prev && prev.classList.contains('form-element')) {
+        formArea.insertBefore(wrapper, prev);
+      }
+    };
+
+    const downBtn = document.createElement('button');
+    downBtn.innerHTML = '<i class="bi bi-arrow-down"></i>';
+    downBtn.className = 'btn btn-sm btn-outline-secondary';
+    downBtn.onclick = () => {
+      const next = wrapper.nextElementSibling;
+      if (next && next.classList.contains('form-element')) {
+        formArea.insertBefore(next, wrapper);
+      }
+    };
+
+    reorderDiv.append(upBtn, downBtn);
+    wrapper.appendChild(reorderDiv);
+
+    const label = document.createElement('input');
+    label.type = 'text';
+    label.value = `${type.charAt(0).toUpperCase() + type.slice(1)} Label`;
+    label.className = 'editable-label form-control-plaintext';
+    label.setAttribute('readonly', true);
+    makeLabelEditable(label);
+
+    const inputTypes = ['text', 'email', 'number', 'password', 'date', 'time', 'tel', 'url', 'color', 'file'];
+
+    if (inputTypes.includes(type)) {
+      const input = document.createElement('input');
+      input.type = type;
+      input.name = `${type}[]`;
+      input.className = 'form-control';
+      wrapper.append(label, input);
+    }
+
+    else if (type === 'textarea') {
+      const textarea = document.createElement('textarea');
+      textarea.name = 'textarea[]';
+      textarea.className = 'form-control';
+      wrapper.append(label, textarea);
+    }
+
+    else if (type === 'checkbox') {
+      const formCheck = document.createElement('div');
+      formCheck.className = 'form-check';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.name = 'checkbox[]';
+      checkbox.className = 'form-check-input';
+
+      label.className += ' form-check-label';
+      formCheck.append(checkbox, label);
+      wrapper.appendChild(formCheck);
+    }
+
+    else if (type === 'select') {
+      const select = document.createElement('select');
+      select.name = 'select[]';
+      select.className = 'form-select';
+
+      const optionsWrapper = document.createElement('div');
+
+      function createOption(value = 'Option') {
+        const optionWrapper = document.createElement('div');
+
+        const optionInput = document.createElement('input');
+        optionInput.type = 'text';
+        optionInput.value = value;
+        optionInput.className = 'option-input form-control';
+
+        const opt = new Option(value, value);
+        select.add(opt);
+
+        optionInput.addEventListener('input', () => {
+          opt.text = optionInput.value;
+          opt.value = optionInput.value;
+        });
+
+        optionWrapper.appendChild(optionInput);
+        optionsWrapper.appendChild(optionWrapper);
+      }
+
+      createOption('Option 1');
+      createOption('Option 2');
+
+      const addBtn = document.createElement('div');
+      addBtn.className = 'add-option-btn mt-2';
+      addBtn.innerText = '+ Add Option';
+      addBtn.onclick = () => createOption(`Option ${select.options.length + 1}`);
+
+      wrapper.append(label, select, optionsWrapper, addBtn);
+    }
+
+    else if (type === 'logo' || type === 'image') {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.className = 'form-control';
+      fileInput.name = type === 'logo' ? 'logo[]' : 'image[]';
+      wrapper.append(label, fileInput);
+    }
+
+    formArea.appendChild(wrapper);
+  }
+</script>
+
+</body>
+</html>
